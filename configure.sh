@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ "${LOGNAME}" != "root" ]; then
-    echo "This script should be run as superuser."
+    echo "this script should be run as superuser."
     exit 1
 fi
 
@@ -14,7 +14,7 @@ else
 fi
 
 echo ".--------------"
-echo "| Using login: ${LOGNAME}"
+echo "| using login: ${LOGNAME}"
 echo "'--------------"
 
 HOME="/home/${LOGNAME}"
@@ -34,12 +34,13 @@ function fail {
 }
 
 # add repositories
-echo "# Adding repositories"
+RELEASE_NAME=`lsb_release -sc`
+echo "# adding repositories"
 
 ## Dropbox
 if [ ! -e /etc/apt/sources.list.d/dropbox.list ]; then
     apt-key adv --keyserver pgp.mit.edu --recv-keys 5044912E >> ${INSTALL_LOGFILE} 2>&1
-    echo "deb http://linux.dropbox.com/ubuntu stable main" > /etc/apt/sources.list.d/dropbox.list
+    echo "deb http://linux.dropbox.com/ubuntu ${RELEASE_NAME} main" > /etc/apt/sources.list.d/dropbox.list
 fi
 
 ## Final Term
@@ -53,7 +54,7 @@ fi
 
 ## Skype
 if [ ! -e /etc/apt/sources.list.d/canonical_partner.list ]; then
-    echo "deb http://archive.canonical.com/ubuntu/ raring partner" >> /etc/apt/sources.list.d/canonical_partner.list
+    echo "deb http://archive.canonical.com/ubuntu/ ${RELEASE_NAME} partner" >> /etc/apt/sources.list.d/canonical_partner.list
 fi
 
 ## Spotify
@@ -65,11 +66,11 @@ fi
 ## Vim
 yes | add-apt-repository ppa:dgadomski/vim-daily >> ${INSTALL_LOGFILE} 2>&1
 
-echo "# Running apt-get update"
+echo "# running apt-get update"
 apt-get update >> ${INSTALL_LOGFILE} 2>&1
 
 # install essential packages
-echo "# Installing packages"
+echo "# installing packages"
 
 PACKAGES=" \
     build-essential \
@@ -106,9 +107,9 @@ DATA_PARTITION_MOUNT_PATH="/media/D"
 DATA_PARTITION_FILE_SYSTEM=`blkid ${DATA_PARTITION_PATH} | awk '{ gsub(/^.*TYPE="/, ""); gsub(/".*$/, ""); print }'`
 
 if [ `mount | grep "^${DATA_PARTITION_PATH}" | wc -l` -gt 0 ]; then
-    echo "# Updating /etc/fstab skipped: ${DATA_PARTITION_PATH} already mounted"
+    echo "# updating /etc/fstab skipped: ${DATA_PARTITION_PATH} already mounted"
 else
-    echo -n "# Adding ${DATA_PARTITION_PATH} (${DATA_PARTITION_FILE_SYSTEM}, mount at ${DATA_PARTITION_MOUNT_PATH}) to /etc/fstab..."
+    echo -n "# adding ${DATA_PARTITION_PATH} (${DATA_PARTITION_FILE_SYSTEM}, mount at ${DATA_PARTITION_MOUNT_PATH}) to /etc/fstab..."
 
     mkdir -p ${DATA_PARTITION_MOUNT_PATH}
     echo "${DATA_PARTITION_PATH} ${DATA_PARTITION_MOUNT_PATH} ${DATA_PARTITION_FILE_SYSTEM} errors=remount-ro 0 0" >> /etc/fstab
@@ -122,7 +123,7 @@ fi
 
 # set default shell
 DEFAULT_SHELL=`which zsh`
-echo -n "# Setting default shell to ${DEFAULT_SHELL}..."
+echo -n "# setting default shell to ${DEFAULT_SHELL}..."
 if chsh --shell "${DEFAULT_SHELL}" "${LOGNAME}"; then
     echo " ok"
 else
@@ -130,15 +131,16 @@ else
 fi
 
 # configure AGH-WPA WiFi network
-echo "# Configuring AGH-WPA network"
+echo "# configuring AGH-WPA network"
 CERT_URL="https://panel.agh.edu.pl/CA-AGH/CA-AGH.der"
 CERT_DIR="/etc/ca-certificates"
 AGH_WPA_OUTPUT="/etc/NetworkManager/system-connections/AGH-WPA"
 
-echo -n "   * Enter username (login@student.agh.edu.pl): "
+echo -n "   * enter username (login@student.agh.edu.pl): "
 read AGH_WPA_USERNAME
-echo -n "   * Enter password: "
+echo -n "   * enter password: "
 read -s AGH_WPA_PASSWORD
+echo ""
 
 echo -n "   * retrieving MAC..."
 MAC=`ifconfig | grep HWaddr | grep wlan | sed 's/^.*HWaddr //' | sed 's/[ \t]*$//' | tr '[:lower:]' '[:upper:]'`
@@ -208,6 +210,6 @@ do
     LOCAL_VARS="${LOCAL_VARS} ${VAR}=${!VAR}"
 done
 
-echo "# Executing ${USER_CONFIG_SCRIPT}"
+echo "# executing ${USER_CONFIG_SCRIPT}"
 sudo -u ${LOGNAME} ${LOCAL_VARS} /usr/bin/env bash "${USER_CONFIG_SCRIPT}"
 
