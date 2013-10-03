@@ -234,10 +234,11 @@ security=802-11-wireless-security
 
 [802-1x]
 eap=peap;
-identity=${USERNAME}
+identity=${AGH_WPA_USERNAME}
 ca-cert=${CERT_DIR}/CA-AGH.der
 phase2-auth=mschapv2
-password=${PASSWORD}
+password=${AGH_WPA_PASSWORD}
+system-ca-certs=true
 
 [ipv4]
 method=auto
@@ -247,6 +248,7 @@ key-mgmt=wpa-eap
 auth-alg=open
 EOF
 
+    chmod 600 "${AGH_WPA_OUTPUT}"
     echo " ok"
 fi
 
