@@ -108,6 +108,9 @@ if [ "${WITH_ADD_REPOSITORIES}" = "yes" ]; then
     ## Vim
     yes | add-apt-repository ppa:dgadomski/vim-daily >> ${INSTALL_LOGFILE} 2>&1
 
+    ## Oracle Java
+    yes | add-apt-repository ppa:webupd8team/java >> ${INSTALL_LOGFILE} 2>&1
+
     echo "# running apt-get update"
     apt-get update >> ${INSTALL_LOGFILE} 2>&1
 fi
@@ -148,10 +151,12 @@ if [ "${WITH_INSTALL_PACKAGES}" = "yes" ]; then
 fi
 
 # auto-mount data partition
-DATA_PARTITION_PATH="/dev/sda2"
-DATA_PARTITION_MOUNT_PATH="/media/D"
-
 if [ "${WITH_CONFIGURE_MOUNT}" = "yes" ]; then
+    echo -n "   * enter data partition path (/dev/sdXN): "
+    read DATA_PARTITION_PATH
+    echo -n "   * enter data partition mount point: "
+    read DATA_PARTITION_MOUNT_PATH
+
     DATA_PARTITION_FILE_SYSTEM=`blkid ${DATA_PARTITION_PATH} | awk '{ gsub(/^.*TYPE="/, ""); gsub(/".*$/, ""); print }'`
 
     if [ `mount | grep "^${DATA_PARTITION_PATH}" | wc -l` -gt 0 ]; then
@@ -160,7 +165,7 @@ if [ "${WITH_CONFIGURE_MOUNT}" = "yes" ]; then
         echo -n "# adding ${DATA_PARTITION_PATH} (${DATA_PARTITION_FILE_SYSTEM}, mount at ${DATA_PARTITION_MOUNT_PATH}) to /etc/fstab..."
 
         mkdir -p ${DATA_PARTITION_MOUNT_PATH}
-        echo "${DATA_PARTITION_PATH} ${DATA_PARTITION_MOUNT_PATH} ${DATA_PARTITION_FILE_SYSTEM} errors=remount-ro 0 0" >> /etc/fstab
+        echo "${DATA_PARTITION_PATH} ${DATA_PARTITION_MOUNT_PATH} ${DATA_PARTITION_FILE_SYSTEM} uid=$(id -u "${LOGNAME}"),gid=$(id -g "${LOGNAME}"),errors=remount-ro 0 0" >> /etc/fstab
 
         if mount -a; then
             echo " ok"
