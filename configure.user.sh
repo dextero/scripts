@@ -249,6 +249,7 @@ if [ "${WITH_AUTORUN}" = "yes" ]; then
     "
 
     echo "- creating autostart entries"
+    mkdir -p "${AUTOSTART_SHORTCUT_DESTINATION}"
     for ENTRY in ${AUTOSTART_ENTRIES}; do
         echo "   * ${ENTRY}"
         cp -f "${AUTOSTART_SHORTCUT_SOURCE}/${ENTRY}.desktop" "${AUTOSTART_SHORTCUT_DESTINATION}/"
