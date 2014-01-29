@@ -14,6 +14,7 @@ WITH_INSTALL_PACKAGES="no"
 WITH_CONFIGURE_MOUNT="no"
 WITH_SET_SHELL="no"
 WITH_CONFIGURE_AGH_WPA="no"
+WITH_INSTALL_PYCLEWN="no"
 
 LOGNAME=""
 
@@ -34,6 +35,9 @@ while [ $# -gt 0 ]; do
         CUSTOM_ARGUMENTS="yes"
     elif [ "$1" = "--configure-agh-wpa" ]; then
         WITH_CONFIGURE_AGH_WPA="yes"
+        CUSTOM_ARGUMENTS="yes"
+    elif [ "$1" = "--install-pyclewn" ]; then
+        WITH_INSTALL_PYCLEWN="yes"
         CUSTOM_ARGUMENTS="yes"
     elif [ "${1:0:2}" = "--" ]; then
         CUSTOM_ARGUMENTS="yes"
@@ -133,6 +137,7 @@ if [ "${WITH_INSTALL_PACKAGES}" = "yes" ]; then
         pidgin \
         powertop \
         python \
+        python3 \
         python-dev \
         skype \
         spotify-client \
@@ -255,6 +260,43 @@ EOF
 
     chmod 600 "${AGH_WPA_OUTPUT}"
     echo " ok"
+fi
+
+if [ "${WITH_INSTALL_PYCLEWN}" = "yes" ]; then
+    echo "# configuring PyClewn"
+
+    pushd . > /dev/null 2>&1
+
+    VUNDLE_ROOT="${HOME}/.vim/bundle"
+    PYCLEWN_DIR_NAME="pyclewn"
+    mkdir -p ${VUNDLE_ROOT}
+    cd ${VUNDLE_ROOT}
+
+    echo -n "   * cloning git repository... "
+    if git clone "http://github.com/lrem/pyclewn" "${PYCLEWN_DIR_NAME}" >> ${INSTALL_LOGFILE} 2>&1 ; then
+        echo "ok"
+
+        cd "${VUNDLE_ROOT}/${PYCLEWN_DIR_NAME}"
+
+        echo -n "   * setting up macro files... "
+        cd "runtime"
+        cp ".pyclewn_keys.template" ".pyclewn_keys.simple"
+        cp ".pyclewn_keys.template" ".pyclewn_keys.gdb"
+        cp ".pyclewn_keys.template" ".pyclewn_keys.pdb"
+        cd ..
+        echo "ok"
+
+        echo -n "   * installing pyclewn... "
+        if python3 setup.py install --force >> ${INSTALL_LOGFILE} 2>&1 ; then
+            echo "ok"
+        else
+            echo "error!"
+        fi
+    else
+        echo "error!"
+    fi
+
+    popd . > /dev/null 2>&1
 fi
 
 # commands that do not require root priveleges are in configure.user.sh
